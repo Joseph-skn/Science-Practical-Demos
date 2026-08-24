@@ -205,7 +205,6 @@
             accent-color: #0066cc;
             cursor: pointer;
             touch-action: pan-y;
-            pointer-events: none;
         }
 
         .input-group {
@@ -802,38 +801,34 @@
         updateReadouts();
         requestAnimationFrame(animate);
         
-        document.querySelectorAll('.input-group').forEach(group => {
-        const slider = group.querySelector('input[type="range"]');
-        let touchTimer = null;
-        let startY = 0;
-        let isHolding = false;
+        // Smart touch handler: Allows vertical page scrolling, captures horizontal slider drags
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            let startX = 0;
+            let startY = 0;
+            let isHorizontalDrag = false;
 
-        group.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            isHolding = false;
+            slider.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                isHorizontalDrag = false;
+            }, { passive: true });
 
-            // Require 200ms continuous hold before unlocking slider interaction
-            touchTimer = setTimeout(() => {
-                isHolding = true;
-                slider.style.pointerEvents = 'auto';
-            }, 200);
-        }, { passive: true });
+            slider.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                const dx = Math.abs(touch.clientX - startX);
+                const dy = Math.abs(touch.clientY - startY);
 
-        group.addEventListener('touchmove', (e) => {
-            const currentY = e.touches[0].clientY;
-            
-            // Cancel hold timer if user is vertical scrolling
-            if (Math.abs(currentY - startY) > 8 && !isHolding) {
-                clearTimeout(touchTimer);
-            }
-        }, { passive: true });
+                // Lock onto horizontal movement if horizontal drag > vertical scroll
+                if (!isHorizontalDrag && dx > dy && dx > 8) {
+                    isHorizontalDrag = true;
+                }
 
-        group.addEventListener('touchend', () => {
-            clearTimeout(touchTimer);
-            slider.style.pointerEvents = 'none';
-            isHolding = false;
+                // If user is scrolling vertically, prevent accidental slider value updates
+                if (!isHorizontalDrag && dy > dx) {
+                    e.stopPropagation();
+                }
+            }, { passive: true });
         });
-    });
     </script>
 </body>
 </html>
