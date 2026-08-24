@@ -205,6 +205,11 @@
             accent-color: #0066cc;
             cursor: pointer;
             touch-action: pan-y;
+            pointer-events: none;
+        }
+
+        .input-group {
+        touch-action: pan-y;
         }
 
         .preset-buttons {
@@ -796,30 +801,39 @@
 
         updateReadouts();
         requestAnimationFrame(animate);
-        // Prevent slider value jumps during page scrolling on touch screens
-document.querySelectorAll('input[type="range"]').forEach(slider => {
-    let isMoving = false;
-    let startY = 0;
-    let startX = 0;
-
-    slider.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        startX = e.touches[0].clientX;
-        isMoving = false;
-    }, { passive: true });
-
-    slider.addEventListener('touchmove', (e) => {
-        const deltaY = Math.abs(e.touches[0].clientY - startY);
-        const deltaX = Math.abs(e.touches[0].clientX - startX);
         
-        // If vertical gesture outweighs horizontal movement, blur slider to keep page scroll smooth
-        if (deltaY > deltaX && !isMoving) {
-            slider.blur();
-        } else if (deltaX > 5) {
-            isMoving = true;
-        }
-    }, { passive: true });
-});
+        document.querySelectorAll('.input-group').forEach(group => {
+        const slider = group.querySelector('input[type="range"]');
+        let touchTimer = null;
+        let startY = 0;
+        let isHolding = false;
+
+        group.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            isHolding = false;
+
+            // Require 500ms continuous hold before unlocking slider interaction
+            touchTimer = setTimeout(() => {
+                isHolding = true;
+                slider.style.pointerEvents = 'auto';
+            }, 500);
+        }, { passive: true });
+
+        group.addEventListener('touchmove', (e) => {
+            const currentY = e.touches[0].clientY;
+            
+            // Cancel hold timer if user is vertical scrolling
+            if (Math.abs(currentY - startY) > 8 && !isHolding) {
+                clearTimeout(touchTimer);
+            }
+        }, { passive: true });
+
+        group.addEventListener('touchend', () => {
+            clearTimeout(touchTimer);
+            slider.style.pointerEvents = 'none';
+            isHolding = false;
+        });
+    });
     </script>
 </body>
 </html>
