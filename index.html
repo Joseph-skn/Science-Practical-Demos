@@ -204,11 +204,6 @@
             width: 100%;
             accent-color: #0066cc;
             cursor: pointer;
-            touch-action: pan-y;
-        }
-
-        .input-group {
-        touch-action: pan-y;
         }
 
         .preset-buttons {
@@ -800,35 +795,6 @@
 
         updateReadouts();
         requestAnimationFrame(animate);
-        
-        // Smart touch handler: Allows vertical page scrolling, captures horizontal slider drags
-        document.querySelectorAll('input[type="range"]').forEach(slider => {
-            let startX = 0;
-            let startY = 0;
-            let isHorizontalDrag = false;
-
-            slider.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                isHorizontalDrag = false;
-            }, { passive: true });
-
-            slider.addEventListener('touchmove', (e) => {
-                const touch = e.touches[0];
-                const dx = Math.abs(touch.clientX - startX);
-                const dy = Math.abs(touch.clientY - startY);
-
-                // Lock onto horizontal movement if horizontal drag > vertical scroll
-                if (!isHorizontalDrag && dx > dy && dx > 8) {
-                    isHorizontalDrag = true;
-                }
-
-                // If user is scrolling vertically, prevent accidental slider value updates
-                if (!isHorizontalDrag && dy > dx) {
-                    e.stopPropagation();
-                }
-            }, { passive: true });
-        });
     </script>
 </body>
 </html>
