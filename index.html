@@ -812,11 +812,11 @@
             startY = e.touches[0].clientY;
             isHolding = false;
 
-            // Require 500ms continuous hold before unlocking slider interaction
+            // Require 200ms continuous hold before unlocking slider interaction
             touchTimer = setTimeout(() => {
                 isHolding = true;
                 slider.style.pointerEvents = 'auto';
-            }, 500);
+            }, 200);
         }, { passive: true });
 
         group.addEventListener('touchmove', (e) => {
